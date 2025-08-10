@@ -32,6 +32,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=rvenu0777-devops
             -Dsonar.java.binaries=target/classes
             -Dsonar.sources=src/main/java
             -Dsonar.tests=src/test/java
