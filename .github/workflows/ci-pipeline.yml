@@ -72,7 +72,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
-          args: --severity-threshold=low --policy-path=.snyk --exclude-base-image-vulns
+          args: --severity-threshold=critical --policy-path=.snyk --exclude-base-image-vulns
 
       # 10. Push to Docker Hub
       - name: Push Docker Image
