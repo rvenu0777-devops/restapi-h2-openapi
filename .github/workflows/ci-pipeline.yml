@@ -13,8 +13,7 @@ env:
 jobs:
   build-test-push:
     runs-on: ubuntu-latest
-    steps:
-      # 1. Checkout code
+    steps: # 1. Checkout code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -24,28 +23,42 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      # 3. SonarQube Scan (before tests!)
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.sources=src/main/java
+            -Dsonar.tests=src/test/java
+            -Dsonar.junit.reportPaths=target/surefire-reports
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
-      # 3. Run unit tests
+      # 4. Run unit tests
       - name: Run Unit Tests
         run: mvn test
 
-      # 4. Build JAR
+      # 5. Build JAR
       - name: Build JAR
         run: mvn clean package -DskipTests
 
-      # 5. Login to Docker Hub
+      # 6. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # 6. Build and tag Docker image
+      # 7. Build and tag Docker image
       - name: Build Docker Image
         run: |
           docker build -t ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }} .
           docker tag ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }} ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
 
-      # 7. Push to Docker Hub
+      # 8. Push to Docker Hub
       - name: Push Docker Image
         run: docker push ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
