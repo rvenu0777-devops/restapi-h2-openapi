@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
       # 3. SonarQube Scan (before tests!)
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-github-action@master
+        uses: sonarsource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
