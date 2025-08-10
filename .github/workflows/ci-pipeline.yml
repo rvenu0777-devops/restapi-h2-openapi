@@ -23,8 +23,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      # 3. Generate classes (without clean)
+      - name: Build project (generate classes)
+        run: mvn compile -DskipTests
           
-      # 3. SonarQube Scan (before tests!)
+      # 4. SonarQube Scan (before tests!)
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v5.3.0
         env:
@@ -40,28 +44,28 @@ jobs:
             -Dsonar.junit.reportPaths=target/surefire-reports
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
-      # 4. Run unit tests
+      # 5. Run unit tests
       - name: Run Unit Tests
         run: mvn test
 
-      # 5. Build JAR
+      # 6. Build JAR
       - name: Build JAR
         run: mvn clean package -DskipTests
 
-      # 6. Login to Docker Hub
+      # 7. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # 7. Build and tag Docker image
+      # 8. Build and tag Docker image
       - name: Build Docker Image
         run: |
           docker build -t ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }} .
           docker tag ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }} ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
 
-      # 8. Snyk Image Scan (NEW)
+      # 9. Snyk Image Scan (NEW)
       - name: Scan Docker Image with Snyk
         uses: snyk/actions/docker@master
         env:
@@ -70,6 +74,6 @@ jobs:
           image: ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
           args: --severity-threshold=low --policy-path=.snyk --exclude-base-image-vulns
 
-      # 9. Push to Docker Hub
+      # 10. Push to Docker Hub
       - name: Push Docker Image
         run: docker push ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
