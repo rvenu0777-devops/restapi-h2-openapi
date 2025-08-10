@@ -60,6 +60,15 @@ jobs:
           docker build -t ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }} .
           docker tag ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }} ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
 
-      # 8. Push to Docker Hub
+      # 8. Snyk Image Scan (NEW)
+      - name: Scan Docker Image with Snyk
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
+          args: --severity-threshold=low --policy-path=.snyk --exclude-base-image-vulns
+
+      # 9. Push to Docker Hub
       - name: Push Docker Image
         run: docker push ${{ env.DOCKER_HUB_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
